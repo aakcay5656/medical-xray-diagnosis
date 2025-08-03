@@ -49,7 +49,6 @@ def preprocess_image_lung(image):
         transforms.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225])
     ])
-   # image = Image.open(image_path).convert("RGB")
     image = transform(image).unsqueeze(0)
     return image.to(device)
 
@@ -77,9 +76,7 @@ def predict_lung_from_bytes(image_bytes:bytes,model):
             outputs = model(image_tensor)
             predicted = torch.argmax(outputs,dim=1)
             return CLASS_NAMES_LUNG[predicted.item()]
-       # print("Model çıktısı:", outputs)
-       # print("Tahmin edilen index:", predicted.item())
-       # print("Tahmin edilen sınıf:", CLASS_NAMES_LUNG[predicted.item()])
+
     except Exception as e:
         return f"Hata oluştu: {str(e)}"
 
@@ -91,8 +88,6 @@ def predict_brain_from_bytes(image_bytes:bytes,model):
             outputs = model(image_tensor)
             predicted = torch.argmax(outputs,dim=1)
             return CLASS_NAMES_BRAIN[predicted.item()]
-        # print("Model çıktısı:", outputs)
-        # print("Tahmin edilen index:", predicted.item())
-        # print("Tahmin edilen sınıf:", CLASS_NAMES_LUNG[predicted.item()])
+
     except Exception as e:
         return f"Hata oluştu: {str(e)}"

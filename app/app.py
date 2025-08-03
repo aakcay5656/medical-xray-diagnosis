@@ -5,7 +5,6 @@ import json
 from config import BASE_URL
 import time
 
-# Page configuration
 st.set_page_config(
     page_title="Medikal AI Asistan",
     layout="wide",
@@ -13,7 +12,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS
 st.markdown("""
 <style>
 .chat-message {
@@ -48,7 +46,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ---- SESSION STATE INITIALIZATION ----
 def init_session_state():
     """Session state değişkenlerini başlatır"""
     defaults = {
@@ -68,7 +65,6 @@ def init_session_state():
 init_session_state()
 
 
-# ---- HELPER FUNCTIONS ----
 def make_request(method, endpoint, **kwargs):
     """HTTP istekleri için yardımcı fonksiyon"""
     try:
@@ -128,7 +124,6 @@ def delete_chat(chat_id):
     return response and response.status_code == 200
 
 
-# ---- SIDEBAR: Chat Management ----
 with st.sidebar:
     st.title("💬 Sohbetler")
 
@@ -137,7 +132,6 @@ with st.sidebar:
         load_chat_list()
         st.rerun()
 
-    # New chat button
     if st.button("➕ Yeni Sohbet", type="primary"):
         if create_new_chat():
             st.success("Yeni sohbet oluşturuldu!")
@@ -148,10 +142,8 @@ with st.sidebar:
 
     st.divider()
 
-    # Load chat list
     load_chat_list()
 
-    # Display chats
     if st.session_state.chat_list:
         st.subheader("Mevcut Sohbetler")
 
@@ -188,15 +180,12 @@ with st.sidebar:
     else:
         st.info("Henüz sohbet yok. Yeni bir sohbet başlatın!")
 
-# ---- MAIN CONTENT ----
 st.title("🩺 Medikal AI Asistan")
 
-# Chat selection warning
 if not st.session_state.current_chat:
     st.warning("👈 Lütfen yan menüden bir sohbet seçin veya yeni sohbet oluşturun.")
     st.stop()
 
-# Display current diagnosis
 if st.session_state.diagnosis:
     st.markdown(f"""
     <div class="diagnosis-box">
@@ -206,7 +195,6 @@ if st.session_state.diagnosis:
     </div>
     """, unsafe_allow_html=True)
 
-# Display chat messages
 st.subheader("💬 Sohbet Geçmişi")
 
 if st.session_state.chat_messages:
@@ -229,7 +217,6 @@ if st.session_state.chat_messages:
 else:
     st.info("Henüz mesaj yok. Aşağıdan soru sorun!")
 
-# ---- Question Input ----
 st.subheader("❓ Soru Sor")
 
 with st.form("question_form"):
@@ -248,14 +235,12 @@ with st.form("question_form"):
     with col2:
         clear_diagnosis = st.form_submit_button("🔄 Tanıyı Temizle")
 
-# Handle form submissions
 if clear_diagnosis:
     st.session_state.diagnosis = None
     st.rerun()
 
 if submit_button and question.strip():
     with st.spinner("🤔 Yanıt hazırlanıyor..."):
-        # Determine endpoint based on diagnosis
         if st.session_state.diagnosis:
             endpoint = "/ask"
             data = {
@@ -266,13 +251,11 @@ if submit_button and question.strip():
             endpoint = "/just_ask"
             data = {"question": question}
 
-        # Make request
         response = make_request("POST", endpoint, json=data)
 
         if response and response.status_code == 200:
             answer = response.json()["response"]
 
-            # Save message
             if save_message(st.session_state.current_chat, question, answer):
                 st.session_state.chat_messages.append({
                     "question": question,
@@ -294,7 +277,6 @@ if submit_button and question.strip():
                     pass
             st.error(error_msg)
 
-# ---- Image Upload and Diagnosis ----
 st.divider()
 st.subheader("📷 Görüntü Analizi")
 
@@ -337,12 +319,10 @@ with col2:
             st.error(f"Görüntü yüklenirken hata: {str(e)}")
             uploaded_file = None
 
-# Diagnosis button
 if uploaded_file is not None:
     if st.button("🔍 Analiz Et", type="primary", use_container_width=True):
         with st.spinner("🧠 Görüntü analiz ediliyor..."):
             try:
-                # Prepare files and data
                 files = {
                     "file": (
                         uploaded_file.name,
@@ -352,7 +332,6 @@ if uploaded_file is not None:
                 }
                 data = {"image_type": image_type}
 
-                # Make prediction request
                 response = make_request("POST", "/predict", files=files, data=data)
 
                 if response and response.status_code == 200:
@@ -360,11 +339,10 @@ if uploaded_file is not None:
                     diagnosis = result["diagnosis"]
 
                     st.session_state.diagnosis = diagnosis
-                    st.session_state.upload_key += 1  # Reset file uploader
+                    st.session_state.upload_key += 1
 
                     st.success("✅ Analiz tamamlandı!")
 
-                    # Display result
                     st.markdown(f"""
                     <div class="diagnosis-box">
                         <h4>🎯 Analiz Sonucu</h4>
@@ -396,7 +374,6 @@ if uploaded_file is not None:
             except Exception as e:
                 st.error(f"Beklenmeyen hata: {str(e)}")
 
-# ---- Footer ----
 st.divider()
 st.markdown("""
 <div style='text-align: center; color: #666; padding: 1rem;'>

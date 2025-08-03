@@ -29,7 +29,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Üretimde belirli domainler kullanın
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -109,23 +109,18 @@ def delete_chat(chat_id: str):
 app.include_router(router)
 
 
-# ------------------------------
-# Tahmin endpoint'i
-# ------------------------------
+
 @app.post("/predict", tags=["Prediction"])
 async def predict_endpoint(file: UploadFile = File(...), image_type: str = Form(...)):
     """Tıbbi görüntü analizi yapar"""
     try:
-        # Dosya türü kontrolü
         if not file.content_type or not file.content_type.startswith('image/'):
             raise HTTPException(status_code=400, detail="Geçersiz dosya türü. Lütfen bir görüntü dosyası yükleyin.")
 
-        # Dosya boyutu kontrolü (örn: 10MB limit)
         contents = await file.read()
         if len(contents) > 10 * 1024 * 1024:  # 10MB
             raise HTTPException(status_code=400, detail="Dosya çok büyük. Maksimum 10MB.")
 
-        # Görüntü türü kontrolü
         if image_type not in models:
             available_types = list(models.keys())
             raise HTTPException(
@@ -133,12 +128,12 @@ async def predict_endpoint(file: UploadFile = File(...), image_type: str = Form(
                 detail=f"Geçersiz görüntü türü. Desteklenen türler: {available_types}"
             )
 
-        # Model kontrolü
+
         model = models[image_type]
         if model is None:
             raise HTTPException(status_code=500, detail=f"{image_type} modeli yüklenemedi")
 
-        # Tahmin yapma
+
         predict_fn = predict_funcs[image_type]
         prediction = predict_fn(contents, model)
 
@@ -157,9 +152,7 @@ async def predict_endpoint(file: UploadFile = File(...), image_type: str = Form(
         raise HTTPException(status_code=500, detail="Tahmin işlemi sırasında bir hata oluştu")
 
 
-# ------------------------------
-# Soru-cevap endpoint'leri
-# ------------------------------
+
 @app.post("/ask", tags=["Q&A"])
 async def ask_with_diagnosis(request: AskRequest):
     """Tanı bilgisi ile soru sorar"""
@@ -173,7 +166,7 @@ async def ask_with_diagnosis(request: AskRequest):
         prompt = f"Yanıtlar Türkçe olarak verilecek. Tanı: {request.diagnosis}, Soru: {request.question}"
         response = agent_executor.invoke({"input": prompt})
 
-        # Response'tan sadece output kısmını al
+
         if isinstance(response, dict) and "output" in response:
             response = response["output"]
         else:
@@ -201,7 +194,7 @@ async def ask_without_diagnosis(request: JustAskRequest):
         prompt = f"Yanıtlar Türkçe olarak verilecek. Soru: {request.question}"
         agent_response = agent_executor.invoke({"input": prompt})
 
-        # Response'tan sadece output kısmını al
+
         if isinstance(agent_response, dict) and "output" in agent_response:
             response = agent_response["output"]
         else:
@@ -218,9 +211,7 @@ async def ask_without_diagnosis(request: JustAskRequest):
         raise HTTPException(status_code=500, detail="Soru yanıtlanırken bir hata oluştu")
 
 
-# ------------------------------
-# Health check endpoint'i
-# ------------------------------
+
 @app.get("/health", tags=["Health"])
 def health_check():
     """API'nin sağlık durumunu kontrol eder"""

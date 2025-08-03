@@ -19,15 +19,13 @@ load_dotenv()
 if not os.getenv("GOOGLE_API_KEY"):
     raise ValueError("GOOGLE_API_KEY environment variable not found")
 
-# LLM tanımı - Geçerli model adı kullanımı
 try:
     llm = ChatGoogleGenerativeAI(
-        model="gemini-2.0-flash-exp",  # Gemini Flash modeli (hızlı ve ekonomik)
-        # model="gemini-1.5-pro",  # Gemini Pro modeli (daha güçlü)
+        model="gemini-2.0-flash-exp",
         temperature=0.7,
         max_output_tokens=1000,
         timeout=30,
-        convert_system_message_to_human=True,  # System mesajlarını human'a çevir
+        convert_system_message_to_human=True,
 
     )
     logger.info("Gemini LLM successfully initialized")
@@ -36,7 +34,6 @@ except Exception as e:
     raise
 
 
-# === TOOL TANIMLARI ===
 @tool
 def explain_diagnosis(diagnosis: str) -> str:
     """Tanıya göre Türkçe tıbbi açıklama yapar (nedenler, belirtiler, tedaviler)."""
@@ -208,15 +205,13 @@ prompt_template = ChatPromptTemplate.from_messages([
     MessagesPlaceholder("agent_scratchpad")
 ])
 
-# === MEMORY - Window ile sınırlı ===
 memory = ConversationBufferWindowMemory(
     memory_key="chat_history",
     return_messages=True,
-    k=10,  # Son 10 mesajı hatırla
+    k=10,
     output_key="output"
 )
 
-# === TOOLS LISTESI ===
 tools = [
     explain_diagnosis,
     medical_researcher,
@@ -227,18 +222,15 @@ tools = [
 ]
 
 
-# === AGENT OLUŞTURMA ===
 def create_medical_agent():
     """Tıbbi AI agent'ını oluşturur"""
     try:
-        # Agent oluştur
         agent = create_openai_tools_agent(
             llm=llm,
             tools=tools,
             prompt=prompt_template
         )
 
-        # Agent executor oluştur
         agent_executor = AgentExecutor(
             agent=agent,
             tools=tools,
@@ -287,7 +279,6 @@ def clear_conversation_history():
 
 if __name__ == "__main__":
     try:
-        # Test senaryosu
         diagnosis = "Zatürre"
         question = "Bu hastalık bulaşıcı mı?"
 
@@ -300,7 +291,6 @@ if __name__ == "__main__":
         print("Yanıt:")
         print(response)
 
-        # İkinci test - genel soru
         print("\n" + "=" * 50)
         general_question = "Migren ağrısı nasıl geçer?"
         print(f"Genel Soru: {general_question}")
