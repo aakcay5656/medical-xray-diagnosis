@@ -170,7 +170,6 @@ def brain_knowledge_base(question: str) -> str:
         return "Beyin hastalıkları bilgi tabanından yanıt alınırken hata oluştu."
 
 
-# === SYSTEM PROMPT ===
 system_prompt = """
 Sen deneyimli bir tıbbi AI asistanısın. Görevin hastalara ve yakınlarına tıbbi konularda yardımcı olmak.
 
